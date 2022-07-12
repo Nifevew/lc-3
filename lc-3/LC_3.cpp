@@ -190,7 +190,109 @@ void LC_3::AND(uint16_t instruction)
 }
 
 
+void LC_3::NOT(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t r_1 = (instruction >> 6) & 0x7;
+
+	registers[r_0] = ~registers[r_1];
+	updateFlags(r_0);
+}
+
+
 void LC_3::BR(uint16_t instruction)
 {
+	uint16_t pc_offset = singExtend(instruction & 0x1FFF, 9);
+	uint16_t cond_flag = (instruction >> 9) & 0x7;
 
+	if (cond_flag && registers[static_cast<int>(REGISTERS::COND)])
+	{
+		registers[static_cast<int>(REGISTERS::PC)] += pc_offset;
+	}
+}
+
+
+void LC_3::JMP(uint16_t instruction)
+{
+	uint16_t r_1 = (instruction >> 6) & 0x7;
+	registers[static_cast<int>(REGISTERS::PC)] = registers[r_1];
+}
+
+
+void LC_3::JSR(uint16_t instruction)
+{
+	uint16_t long_flag = (instruction >> 11) & 0x1;
+
+	if (long_flag == 1)
+	{
+		uint16_t long_pc_offset = singExtend(instruction & 0x7FF, 11);
+		registers[static_cast<int>(REGISTERS::PC)] += long_pc_offset; // JSR
+	}
+	else
+	{
+		uint16_t r_1 = (instruction >> 6) & 0x7;
+		registers[static_cast<int>(REGISTERS::PC)] = registers[r_1];
+	}
+}
+
+
+void LC_3::LD(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
+	registers[r_0] = mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
+
+	updateFlags(r_0);
+}
+
+
+void LC_3::LDR(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t r_1 = (instruction >> 6) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x3F, 6);
+
+	registers[r_0] = mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
+
+	updateFlags(r_0);
+}
+
+
+void LC_3::ST(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
+
+	mem_write(registers[static_cast<int>(REGISTERS::PC)] + pc_offset, registers[r_0]);
+}
+
+
+void LC_3::STI(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
+
+	mem_write(mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset), registers[r_0]);
+}
+
+
+void LC_3::STR(uint16_t instruction)
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t r_1 = (instruction >> 6) & 0x7;
+	uint16_t offset = singExtend(instruction & 0x3F, 6);
+
+	mem_write(registers[r_1] + offset, registers[r_0]);
+}
+
+
+void LC_3::LEA(uint16_t instructon)
+{
+	uint16_t r_0 = (instructon >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instructon & 0x1FF, 9);
+
+	registers[r_0] = registers[static_cast<int>(REGISTERS::PC)] + pc_offset;
+
+	updateFlags(r_0);
 }

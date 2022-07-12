@@ -96,11 +96,11 @@ private:
 	void JSR(uint16_t instruction);
 	void LD(uint16_t instruction);
 	void LDR(uint16_t instruction);
-	void TRAP(uint16_t instruction);
 	void ST(uint16_t instruction);
 	void STI(uint16_t instruction);
 	void STR(uint16_t instruction);
 	void LEA(uint16_t instruction);
+	void TRAP(uint16_t instruction);
 };
 
 
