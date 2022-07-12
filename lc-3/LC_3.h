@@ -72,6 +72,22 @@ private:
 	};
 
 
+	/// <summary>
+	/// Расширение значений числа в дополнительном коде
+	/// 
+	/// Пример:
+	///		из 5-битного числа сделать 16-битное, с учетом знака
+	/// 
+	/// </summary>
+	uint16_t singExtend(uint16_t x, int bit_count) const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void updateFlags(uint16_t r);
+
+
+	void ADD(uint16_t instruction);
 };
 
 
