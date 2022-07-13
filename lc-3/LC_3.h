@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
+
+#include <iostream>
 
 /// <summary>
 /// Класс, реализующий LC-3 виртуальную машину
@@ -101,7 +104,7 @@ private:
 	void STR(uint16_t instruction);
 	void LEA(uint16_t instruction);
 
-	enum class TRAP
+	enum class TRAPS
 	{
 		GETC = 0x20,
 		OUT = 0x21,
@@ -112,6 +115,13 @@ private:
 	};
 
 	void TRAP(uint16_t instruction);
+
+	void GETC();
+	void OUT();
+	void PUTS();
+	void IN();
+	void PUTSP();
+	void HALT();
 };
 
 
