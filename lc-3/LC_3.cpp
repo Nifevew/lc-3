@@ -8,12 +8,12 @@ void LC_3::run()
 	enum {PC_START = 0x3000};  // ѕо умолчанию старт системы на 3000 адресе
 	registers[static_cast<int>(REGISTERS::PC)] = static_cast<uint16_t>(PC_START);
 
-	uint16_t instruction;
+	//uint16_t instruction;
 	uint16_t operation;
 
 	OPERATORS op;
 
-	int running = 1;
+	//int running = 1;
 	while (running)
 	{
 		instruction = mem_read(registers[static_cast<int>(REGISTERS::PC)]++);
@@ -25,72 +25,72 @@ void LC_3::run()
 		{
 		case OPERATORS::ADD:
 		{
-			ADD(instruction);
+			Add();
 			break;
 		}
 		case OPERATORS::AND:
 		{
-			AND(instruction);
+			And();
 			break;
 		}
 		case OPERATORS::NOT:
 		{
-			NOT(instruction);
+			Not();
 			break;
 		}
 		case OPERATORS::BR:
 		{
-			BR(instruction);
+			Br();
 			break;
 		}
 		case OPERATORS::JMP:
 		{
-			JMP(instruction);
+			Jmp();
 			break;
 		}
 		case OPERATORS::JSR:
 		{
-			JSR(instruction);
+			Jsr();
 			break;
 		}
 		case OPERATORS::LD:
 		{
-			LD(instruction);
+			Ld();
 			break;
 		}
 		case OPERATORS::LDI:
 		{
-			LDI(instruction);
+			Ldr();
 			break;
 		}
 		case OPERATORS::LDR:
 		{
-			LDR(instruction);
+			Ldr();
 			break;
 		}
 		case OPERATORS::LEA:
 		{
-			LEA(instruction);
+			Lea();
 			break;
 		}
 		case OPERATORS::ST:
 		{
-			ST(instruction);
+			St();
 			break;
 		}
 		case OPERATORS::STI:
 		{
-			STI(instruction);
+			Sti();
 			break;
 		}
 		case OPERATORS::STR:
 		{
-			STR(instruction);
+			Str();
 			break;
 		}
 		case OPERATORS::TRAP:
 		{
-			TRAP(instruction);
+			TRAP();
 			break;
 		}
 		case OPERATORS::RES:
@@ -136,7 +136,7 @@ void LC_3::updateFlags(uint16_t r)
 }
 
 
-void LC_3::ADD(uint16_t instruction)
+void LC_3::Add()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;						// адрес регистра результата
 	uint16_t r_1 = (instruction >> 6) & 0x7;						// адрес регистра первого слагаемого
@@ -158,7 +158,7 @@ void LC_3::ADD(uint16_t instruction)
 }
 
 
-void LC_3::LDI(uint16_t instruction)
+void LC_3::Ldi()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FFF, 9);
@@ -169,7 +169,7 @@ void LC_3::LDI(uint16_t instruction)
 }
 
 
-void LC_3::AND(uint16_t instruction)
+void LC_3::And()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -190,7 +190,7 @@ void LC_3::AND(uint16_t instruction)
 }
 
 
-void LC_3::NOT(uint16_t instruction)
+void LC_3::Not()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -200,7 +200,7 @@ void LC_3::NOT(uint16_t instruction)
 }
 
 
-void LC_3::BR(uint16_t instruction)
+void LC_3::Br()
 {
 	uint16_t pc_offset = singExtend(instruction & 0x1FFF, 9);
 	uint16_t cond_flag = (instruction >> 9) & 0x7;
@@ -212,14 +212,14 @@ void LC_3::BR(uint16_t instruction)
 }
 
 
-void LC_3::JMP(uint16_t instruction)
+void LC_3::Jmp()
 {
 	uint16_t r_1 = (instruction >> 6) & 0x7;
 	registers[static_cast<int>(REGISTERS::PC)] = registers[r_1];
 }
 
 
-void LC_3::JSR(uint16_t instruction)
+void LC_3::Jsr()
 {
 	uint16_t long_flag = (instruction >> 11) & 0x1;
 
@@ -236,7 +236,7 @@ void LC_3::JSR(uint16_t instruction)
 }
 
 
-void LC_3::LD(uint16_t instruction)
+void LC_3::Ld()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 
@@ -247,7 +247,7 @@ void LC_3::LD(uint16_t instruction)
 }
 
 
-void LC_3::LDR(uint16_t instruction)
+void LC_3::Ldr()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -259,7 +259,7 @@ void LC_3::LDR(uint16_t instruction)
 }
 
 
-void LC_3::ST(uint16_t instruction)
+void LC_3::St()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -268,7 +268,7 @@ void LC_3::ST(uint16_t instruction)
 }
 
 
-void LC_3::STI(uint16_t instruction)
+void LC_3::Sti()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -277,7 +277,7 @@ void LC_3::STI(uint16_t instruction)
 }
 
 
-void LC_3::STR(uint16_t instruction)
+void LC_3::Str()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -287,10 +287,10 @@ void LC_3::STR(uint16_t instruction)
 }
 
 
-void LC_3::LEA(uint16_t instructon)
+void LC_3::Lea()
 {
-	uint16_t r_0 = (instructon >> 9) & 0x7;
-	uint16_t pc_offset = singExtend(instructon & 0x1FF, 9);
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 
 	registers[r_0] = registers[static_cast<int>(REGISTERS::PC)] + pc_offset;
 
@@ -298,42 +298,42 @@ void LC_3::LEA(uint16_t instructon)
 }
 
 
-void LC_3::TRAP(uint16_t instructon)
+void LC_3::TRAP()
 {
 	registers[static_cast<int>(REGISTERS::R7)] = registers[static_cast<int>(REGISTERS::PC)];
 
-	TRAPS trap = static_cast<TRAPS>(instructon & 0xFF);
+	TRAPS trap = static_cast<TRAPS>(instruction & 0xFF);
 
 	switch (trap)
 	{
 	case TRAPS::GETC:
 	{
-		GETC();
+		Getc();
 		break;
 	}
 	case TRAPS::OUT:
 	{
-		OUT();
+		Out();
 		break;
 	}
 	case TRAPS::PUTS:
 	{
-		PUTS();
+		Puts();
 		break;
 	}
 	case TRAPS::IN:
 	{
-		IN();
+		In();
 		break;
 	}
 	case TRAPS::PUTSP:
 	{
-		PUTSP();
+		Putsp();
 		break;
 	}
 	case TRAPS::HALT:
 	{
-		HALT();
+		Halt();
 		break;
 	}
 	default:
@@ -342,27 +342,27 @@ void LC_3::TRAP(uint16_t instructon)
 }
 
 
-void LC_3::GETC()
+void LC_3::Getc()
 {
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
 }
 
 
-void LC_3::OUT()
+void LC_3::Out()
 {
 	putc((char)registers[static_cast<int>(REGISTERS::R0)], stdout);  // std::cout << static_cast<char>(*c);
 	fflush(stdout);
 }
 
 
-void LC_3::IN()
+void LC_3::In()
 {
 	printf("Enter a character: ");
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
 }
 
 
-void LC_3::PUTS()
+void LC_3::Puts()
 {
 	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
 
@@ -376,7 +376,7 @@ void LC_3::PUTS()
 }
 
 
-void LC_3::PUTSP()
+void LC_3::Putsp()
 {
 	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
 
@@ -396,7 +396,7 @@ void LC_3::PUTSP()
 }
 
 
-void LC_3::HALT(int& running)
+void LC_3::Halt()
 {
 	puts("HALT"); //TODO:
 	fflush(stdout);
@@ -463,4 +463,10 @@ uint16_t LC_3::mem_read(uint16_t address)
 	}
 
 	return memory[address];
+}
+
+
+uint16_t LC_3::check_key()
+{
+	return WaitForSingleObject(hStdin, 1000) == WAIT_OBJECT_0 && _kbhit();
 }

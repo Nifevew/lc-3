@@ -5,6 +5,13 @@
 
 #include <iostream>
 
+#include <Windows.h>
+#include <conio.h>  // _kbhit
+
+
+#undef OUT
+#undef IN
+
 /// <summary>
 /// Класс, реализующий LC-3 виртуальную машину
 /// </summary>
@@ -15,6 +22,10 @@ public:
 	void run();
 
 private:
+
+	uint16_t instruction;
+	int running;
+
 
 	/// <summary>
 	/// Оперативная память 128Кб
@@ -90,19 +101,19 @@ private:
 	void updateFlags(uint16_t r);
 
 
-	void ADD(uint16_t instruction);
-	void LDI(uint16_t instruction);
-	void AND(uint16_t instruction);
-	void NOT(uint16_t instruction);
-	void BR(uint16_t instruction);
-	void JMP(uint16_t instruction);
-	void JSR(uint16_t instruction);
-	void LD(uint16_t instruction);
-	void LDR(uint16_t instruction);
-	void ST(uint16_t instruction);
-	void STI(uint16_t instruction);
-	void STR(uint16_t instruction);
-	void LEA(uint16_t instruction);
+	void Add();
+	void Ldi();
+	void And();
+	void Not();
+	void Br();
+	void Jmp();
+	void Jsr();
+	void Ld();
+	void Ldr();
+	void St();
+	void Sti();
+	void Str();
+	void Lea();
 
 	enum class TRAPS
 	{
@@ -114,14 +125,14 @@ private:
 		HALT = 0x25
 	};
 
-	void TRAP(uint16_t instruction);
+	void TRAP();
 
-	void GETC();
-	void OUT();
-	void PUTS();
-	void IN();
-	void PUTSP();
-	void HALT(int& running);
+	void Getc();
+	void Out();
+	void Puts();
+	void In();
+	void Putsp();
+	void Halt();
 
 	void read_image_file(FILE* file);
 	uint16_t swap16(uint16_t x);
@@ -136,6 +147,7 @@ private:
 	void mem_write(uint16_t address, uint16_t value);
 	uint16_t mem_read(uint16_t address);
 
+	HANDLE hStdin = INVALID_HANDLE_VALUE;
 	uint16_t check_key();
 };
 
