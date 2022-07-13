@@ -5,7 +5,7 @@ void LC_3::run()
 {
 	registers[static_cast<int>(REGISTERS::COND)] = static_cast<uint16_t>(FLAG::ZRO);
 
-	enum {PC_START = 0x3000};  // ѕо умолчанию старт системсы на 3000 адресе
+	enum {PC_START = 0x3000};  // ѕо умолчанию старт системы на 3000 адресе
 	registers[static_cast<int>(REGISTERS::PC)] = static_cast<uint16_t>(PC_START);
 
 	uint16_t instruction;
@@ -297,6 +297,7 @@ void LC_3::LEA(uint16_t instructon)
 	updateFlags(r_0);
 }
 
+
 void LC_3::TRAP(uint16_t instructon)
 {
 	registers[static_cast<int>(REGISTERS::R7)] = registers[static_cast<int>(REGISTERS::PC)];
@@ -374,6 +375,7 @@ void LC_3::PUTS()
 	fflush(stdout); // можно убрать?
 }
 
+
 void LC_3::PUTSP()
 {
 	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
@@ -394,10 +396,47 @@ void LC_3::PUTSP()
 }
 
 
-void LC_3::HALT()
+void LC_3::HALT(int& running)
 {
 	puts("HALT"); //TODO:
 	fflush(stdout);
 
 	running = 0;
+}
+
+
+void LC_3::read_image_file(FILE* file)
+{
+	uint16_t origin;
+	fread(&origin, sizeof(origin), 1, file);
+	origin = swap16(origin);
+
+	uint16_t max_read = UINT16_MAX - origin;
+	uint16_t* p = memory + origin;
+	std::size_t read = fread(p, sizeof(uint16_t), max_read, file);
+
+	while (read-- > 0)
+	{
+		*p = swap16(*p);
+		p++;
+	}
+}
+
+
+uint16_t swap16(uint16_t x)
+{
+	return (x << 8) | (x >> 8);
+}
+
+
+int LC_3::read_image(const char* image_path)
+{
+	FILE* file = fopen(image_path, "rb");
+	if (!file)
+		return 0;
+
+	read_image_file(file);
+	fclose(file);
+
+	return 1;
 }

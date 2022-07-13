@@ -121,7 +121,11 @@ private:
 	void PUTS();
 	void IN();
 	void PUTSP();
-	void HALT();
+	void HALT(int& running);
+
+	void read_image_file(FILE* file);
+	uint16_t swap16(uint16_t x);
+	int read_image(const char* image_path);
 };
 
 
