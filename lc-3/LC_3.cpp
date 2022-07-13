@@ -296,3 +296,108 @@ void LC_3::LEA(uint16_t instructon)
 
 	updateFlags(r_0);
 }
+
+void LC_3::TRAP(uint16_t instructon)
+{
+	registers[static_cast<int>(REGISTERS::R7)] = registers[static_cast<int>(REGISTERS::PC)];
+
+	TRAPS trap = static_cast<TRAPS>(instructon & 0xFF);
+
+	switch (trap)
+	{
+	case TRAPS::GETC:
+	{
+		GETC();
+		break;
+	}
+	case TRAPS::OUT:
+	{
+		OUT();
+		break;
+	}
+	case TRAPS::PUTS:
+	{
+		PUTS();
+		break;
+	}
+	case TRAPS::IN:
+	{
+		IN();
+		break;
+	}
+	case TRAPS::PUTSP:
+	{
+		PUTSP();
+		break;
+	}
+	case TRAPS::HALT:
+	{
+		HALT();
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+
+void LC_3::GETC()
+{
+	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+}
+
+
+void LC_3::OUT()
+{
+	putc((char)registers[static_cast<int>(REGISTERS::R0)], stdout);  // std::cout << static_cast<char>(*c);
+	fflush(stdout);
+}
+
+
+void LC_3::IN()
+{
+	printf("Enter a character: ");
+	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+}
+
+
+void LC_3::PUTS()
+{
+	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
+
+	while (*c)
+	{
+		putc((char)*c, stdout);  // std::cout << static_cast<char>(*c);
+		c++;
+	}
+
+	fflush(stdout); // можно убрать?
+}
+
+void LC_3::PUTSP()
+{
+	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
+
+	while (*c)
+	{
+		char c_1 = (*c) & 0xFF;
+		putc(c_1, stdout); // TODO: std::cout << c_1;
+		
+		char c_2 = (*c) >> 8;
+		if (c_2)
+			putc(c_2, stdout); //TODO: std::cout << c_2
+
+		c++;
+	}
+
+	fflush(stdout); //TODO: можно убрать?
+}
+
+
+void LC_3::HALT()
+{
+	puts("HALT"); //TODO:
+	fflush(stdout);
+
+	running = 0;
+}
