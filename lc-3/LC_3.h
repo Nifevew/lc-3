@@ -126,6 +126,17 @@ private:
 	void read_image_file(FILE* file);
 	uint16_t swap16(uint16_t x);
 	int read_image(const char* image_path);
+
+	enum class MR
+	{
+		KBSR = 0xFE00,
+		KBDR = 0xFE02
+	};
+
+	void mem_write(uint16_t address, uint16_t value);
+	uint16_t mem_read(uint16_t address);
+
+	uint16_t check_key();
 };
 
 

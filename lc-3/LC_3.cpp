@@ -440,3 +440,27 @@ int LC_3::read_image(const char* image_path)
 
 	return 1;
 }
+
+
+void LC_3::mem_write(uint16_t address, uint16_t value)
+{
+	memory[address] = value;
+}
+
+uint16_t LC_3::mem_read(uint16_t address)
+{
+	if (address == static_cast<uint16_t>(MR::KBSR))
+	{
+		if (check_key())
+		{
+			memory[static_cast<int>(MR::KBSR)] = (1 << 15);
+			memory[static_cast<int>(MR::KBDR)] = getchar();
+		}
+		else
+		{
+			memory[static_cast<int>(MR::KBSR)] = 0;
+		}
+	}
+
+	return memory[address];
+}
