@@ -69,7 +69,7 @@ void LC_3::run(const char* image_path)
 		}
 		case OPERATORS::LDI:
 		{
-			Ldr();
+			Ldi();
 			break;
 		}
 		case OPERATORS::LDR:
@@ -169,17 +169,6 @@ void LC_3::Add()
 }
 
 
-void LC_3::Ldi()
-{
-	uint16_t r_0 = (instruction >> 9) & 0x7;
-	uint16_t pc_offset = singExtend(instruction & 0x1FFF, 9);
-
-	registers[r_0] = mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
-
-	updateFlags(r_0);
-}
-
-
 void LC_3::And()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
@@ -189,7 +178,8 @@ void LC_3::And()
 
 	if (imm_flag == 1)
 	{
-		uint16_t imm5 = singExtend(instruction & 0x1F, 5); // TODO: what is 0x1F ???
+		uint16_t imm5 = singExtend(instruction & 0x1F, 5);
+		registers[r_0] = registers[r_1] & imm5;
 	}
 	else
 	{
@@ -213,10 +203,10 @@ void LC_3::Not()
 
 void LC_3::Br()
 {
-	uint16_t pc_offset = singExtend(instruction & 0x1FFF, 9);
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 	uint16_t cond_flag = (instruction >> 9) & 0x7;
 
-	if (cond_flag && registers[static_cast<int>(REGISTERS::COND)])
+	if (cond_flag & registers[static_cast<int>(REGISTERS::COND)])
 	{
 		registers[static_cast<int>(REGISTERS::PC)] += pc_offset;
 	}
@@ -233,6 +223,7 @@ void LC_3::Jmp()
 void LC_3::Jsr()
 {
 	uint16_t long_flag = (instruction >> 11) & 0x1;
+	registers[static_cast<uint16_t>(REGISTERS::R7)] = registers[static_cast<uint16_t>(REGISTERS::PC)];
 
 	if (long_flag == 1)
 	{
@@ -242,7 +233,7 @@ void LC_3::Jsr()
 	else
 	{
 		uint16_t r_1 = (instruction >> 6) & 0x7;
-		registers[static_cast<int>(REGISTERS::PC)] = registers[r_1];
+		registers[static_cast<int>(REGISTERS::PC)] = registers[r_1]; // JSRR
 	}
 }
 
@@ -258,13 +249,35 @@ void LC_3::Ld()
 }
 
 
+void LC_3::Ldi()
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
+
+	registers[r_0] = mem_read(mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset));
+
+	updateFlags(r_0);
+}
+
+
 void LC_3::Ldr()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x3F, 6);
 
-	registers[r_0] = mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
+	registers[r_0] = mem_read(registers[r_1] + pc_offset);
+
+	updateFlags(r_0);
+}
+
+
+void LC_3::Lea()
+{
+	uint16_t r_0 = (instruction >> 9) & 0x7;
+	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
+
+	registers[r_0] = registers[static_cast<int>(REGISTERS::PC)] + pc_offset;
 
 	updateFlags(r_0);
 }
@@ -295,17 +308,6 @@ void LC_3::Str()
 	uint16_t offset = singExtend(instruction & 0x3F, 6);
 
 	mem_write(registers[r_1] + offset, registers[r_0]);
-}
-
-
-void LC_3::Lea()
-{
-	uint16_t r_0 = (instruction >> 9) & 0x7;
-	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
-
-	registers[r_0] = registers[static_cast<int>(REGISTERS::PC)] + pc_offset;
-
-	updateFlags(r_0);
 }
 
 
@@ -355,14 +357,17 @@ void LC_3::TRAP()
 
 void LC_3::Getc()
 {
-	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+	registers[static_cast<int>(REGISTERS::R0)] = (uint16_t)getchar();   //static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
 
 
 void LC_3::Out()
 {
-	putc((char)registers[static_cast<int>(REGISTERS::R0)], stdout);  // std::cout << static_cast<char>(*c);
-	fflush(stdout);
+	std::cout << static_cast<char>(registers[static_cast<int>(REGISTERS::R0)]);
+
+	//putc((char)registers[static_cast<int>(REGISTERS::R0)], stdout);  // std::cout << static_cast<char>(*c);
+	//fflush(stdout);
 }
 
 
@@ -370,6 +375,7 @@ void LC_3::In()
 {
 	printf("Enter a character: ");
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
 
 
@@ -522,9 +528,9 @@ void LC_3::restore_input_buffering()
 	SetConsoleMode(hStdin, fdwOldMode);
 }
 
-//void LC_3::handle_interrupt(int signal)
-//{
-//	restore_input_buffering();
-//	printf("\n");
-//	exit(-2);
-//}
+void LC_3::handle_interrupt(int signal)
+{
+	restore_input_buffering();
+	printf("\n");
+	exit(-2);
+}

@@ -29,13 +29,13 @@ public:
 private:
 
 	uint16_t instruction;
-	int running;
+	int running = 1; // TODO: вынести в конструктор
 
 
 	/// <summary>
 	/// Оперативная память 128Кб
 	/// </summary>
-	uint16_t memory[UINT16_MAX];
+	uint16_t memory[UINT16_MAX] = {}; // TODO: вынести в конструктор
 
 	/// <summary>
 	/// Доступные регистры
@@ -161,6 +161,6 @@ private:
 
 	void disable_input_buffering();
 	void restore_input_buffering();
-	//void handle_interrupt(int signal);
+	void handle_interrupt(int signal);
 
 };
