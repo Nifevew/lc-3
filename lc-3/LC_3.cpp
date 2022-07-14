@@ -121,7 +121,7 @@ void LC_3::run(const char* image_path)
 // TODO: возможно стоит сделать изменение значения через ссылку
 uint16_t LC_3::singExtend(uint16_t x, int bit_count) const 
 {
-	if (x >> (bit_count - 1) & 1)		//если первый бит 1 => число отрицательное, тогда число раширяется еденицами, а не нулями
+	if (x >> (bit_count - 1) & 1)		//если первый бит 1 => число отрицательное, тогда число расширяется единицами, а не нулями
 	{
 		x |= (0xFFFF << bit_count);
 	}
@@ -357,7 +357,7 @@ void LC_3::TRAP()
 
 void LC_3::Getc()
 {
-	registers[static_cast<int>(REGISTERS::R0)] = (uint16_t)getchar();   //static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(std::cin.get());
 	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
 
@@ -365,16 +365,13 @@ void LC_3::Getc()
 void LC_3::Out()
 {
 	std::cout << static_cast<char>(registers[static_cast<int>(REGISTERS::R0)]);
-
-	//putc((char)registers[static_cast<int>(REGISTERS::R0)], stdout);  // std::cout << static_cast<char>(*c);
-	//fflush(stdout);
 }
 
 
 void LC_3::In()
 {
 	printf("Enter a character: ");
-	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(getchar()); // TODO: заменить getchar с++ реализацией
+	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(std::cin.get());
 	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
 
@@ -385,11 +382,9 @@ void LC_3::Puts()
 
 	while (*c)
 	{
-		putc((char)*c, stdout);  // std::cout << static_cast<char>(*c);
+		std::cout << static_cast<char>(*c);
 		c++;
 	}
-
-	fflush(stdout); // можно убрать?
 }
 
 
@@ -400,23 +395,20 @@ void LC_3::Putsp()
 	while (*c)
 	{
 		char c_1 = (*c) & 0xFF;
-		putc(c_1, stdout); // TODO: std::cout << c_1;
+		std::cout << c_1;
 		
 		char c_2 = (*c) >> 8;
 		if (c_2)
-			putc(c_2, stdout); //TODO: std::cout << c_2
+			std::cout << c_2;
 
 		c++;
 	}
-
-	fflush(stdout); //TODO: можно убрать?
 }
 
 
 void LC_3::Halt()
 {
-	puts("HALT"); //TODO:
-	fflush(stdout);
+	std::cout << "HALT";
 
 	running = 0;
 }
@@ -491,7 +483,7 @@ uint16_t LC_3::mem_read(uint16_t address)
 		if (check_key())
 		{
 			memory[static_cast<int>(MR::KBSR)] = (1 << 15);
-			memory[static_cast<int>(MR::KBDR)] = getchar();
+			memory[static_cast<int>(MR::KBDR)] = std::cin.get();
 		}
 		else
 		{
