@@ -1,8 +1,17 @@
 #include "LC_3.h"
 
 
-void LC_3::run()
+void LC_3::run(const char* image_path)
 {
+	if (!read_image(image_path))
+	{
+		printf("failed to load image: %s\n", image_path);
+		exit(1);
+	}
+
+	//signal(SIGINT, handle_interrupt);
+	disable_input_buffering();
+
 	registers[static_cast<int>(REGISTERS::COND)] = static_cast<uint16_t>(FLAG::ZRO);
 
 	enum {PC_START = 0x3000};  // ѕо умолчанию старт системы на 3000 адресе
@@ -98,12 +107,14 @@ void LC_3::run()
 
 		default:
 		{
-			
+			abort();
 			break;
 		}
 
 		}
 	}
+
+	restore_input_buffering();
 }
 
 
@@ -407,6 +418,16 @@ void LC_3::Halt()
 
 void LC_3::read_image_file(FILE* file)
 {
+	//uint16_t origin;
+	//char byte[2];
+	//fin.read(byte, 2);
+
+	//origin = static_cast<uint16_t>(byte[2]);
+	//origin = swap16(origin);
+
+	//uint16_t max_read = UINT16_MAX - origin;
+	//uint16_t* p = memory + origin;
+
 	uint16_t origin;
 	fread(&origin, sizeof(origin), 1, file);
 	origin = swap16(origin);
@@ -423,7 +444,7 @@ void LC_3::read_image_file(FILE* file)
 }
 
 
-uint16_t swap16(uint16_t x)
+uint16_t LC_3::swap16(uint16_t x)
 {
 	return (x << 8) | (x >> 8);
 }
@@ -431,6 +452,16 @@ uint16_t swap16(uint16_t x)
 
 int LC_3::read_image(const char* image_path)
 {
+	//std::ifstream fin{ image_path, std::ios::in | std::ios::binary };
+
+	//if (!fin.is_open())
+	//	return 0;
+
+	//read_image_file(fin);
+	//fin.close();
+
+	//return 1;
+
 	FILE* file = fopen(image_path, "rb");
 	if (!file)
 		return 0;
@@ -470,3 +501,30 @@ uint16_t LC_3::check_key()
 {
 	return WaitForSingleObject(hStdin, 1000) == WAIT_OBJECT_0 && _kbhit();
 }
+
+
+
+
+void LC_3::disable_input_buffering()
+{
+	hStdin = GetStdHandle(STD_INPUT_HANDLE);
+	GetConsoleMode(hStdin, &fdwOldMode); /* save old mode */
+	fdwMode = fdwOldMode
+		^ ENABLE_ECHO_INPUT  /* no input echo */
+		^ ENABLE_LINE_INPUT; /* return when one or
+								more characters are available */
+	SetConsoleMode(hStdin, fdwMode); /* set new mode */
+	FlushConsoleInputBuffer(hStdin); /* clear buffer */
+}
+
+void LC_3::restore_input_buffering()
+{
+	SetConsoleMode(hStdin, fdwOldMode);
+}
+
+//void LC_3::handle_interrupt(int signal)
+//{
+//	restore_input_buffering();
+//	printf("\n");
+//	exit(-2);
+//}

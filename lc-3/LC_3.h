@@ -1,9 +1,13 @@
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdint.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <Windows.h>
 #include <conio.h>  // _kbhit
@@ -12,6 +16,7 @@
 #undef OUT
 #undef IN
 
+
 /// <summary>
 /// Класс, реализующий LC-3 виртуальную машину
 /// </summary>
@@ -19,7 +24,7 @@ class LC_3
 {
 public:
 
-	void run();
+	void run(const char* image_path);
 
 private:
 
@@ -149,7 +154,13 @@ private:
 
 	HANDLE hStdin = INVALID_HANDLE_VALUE;
 	uint16_t check_key();
+
+	// windows console methods
+	DWORD fdwMode;
+	DWORD fdwOldMode;
+
+	void disable_input_buffering();
+	void restore_input_buffering();
+	//void handle_interrupt(int signal);
+
 };
-
-
-
