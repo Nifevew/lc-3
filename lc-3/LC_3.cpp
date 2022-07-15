@@ -413,53 +413,22 @@ void LC_3::Halt()
 }
 
 
-void LC_3::read_image_file(FILE* file)
-{
-	//uint16_t origin;
-	//char byte[2];
-	//fin.read(byte, 2);
-
-	//origin = static_cast<uint16_t>(byte[2]);
-	//origin = swap16(origin);
-
-	//uint16_t max_read = UINT16_MAX - origin;
-	//uint16_t* p = memory + origin;
-
-	uint16_t origin;
-	fread(&origin, sizeof(origin), 1, file);
-	origin = swap16(origin);
-
-	uint16_t max_read = UINT16_MAX - origin;
-	uint16_t* p = memory + origin;
-	std::size_t read = fread(p, sizeof(uint16_t), max_read, file);
-
-	while (read-- > 0)
-	{
-		*p = swap16(*p);
-		p++;
-	}
-}
-
-
 void LC_3::read_image_file(std::ifstream& file)
 {
 	uint16_t origin;
 
-	char origin_1;
-	char origin_2;
-	file.read(&origin_1, 1);
-	file.read(&origin_2, 1);
+	char byte;
+	unsigned char ubyte;
 
-	origin = (origin_1 << 8);
-	//origin = origin << 8;
-	origin = origin | origin_2;
+	file.read(&byte, 1);
+	ubyte = static_cast<unsigned char>(byte);
+	origin = (ubyte << 8);
 
-	std::cout << origin << std::endl;
+	file.read(&byte, 1);
+	ubyte = static_cast<unsigned char>(byte);
+	origin = origin | byte;
 
 	int max_read = UINT16_MAX - origin;
-	//char* p = (char*)(memory + (uint16_t)origin);
-	//std::size_t read = file.readsome(p, max_read);
-
 	uint16_t* p = memory + origin;
 	uint16_t tmp = 0;
 	std::size_t read = 0;
@@ -470,38 +439,18 @@ void LC_3::read_image_file(std::ifstream& file)
 
 	while (read < max_read)
 	{
-		file.read(&origin_1, 1);
-		file.read(&origin_2, 1);
+		file.read(&byte, 1);
+		ubyte = static_cast<unsigned char>(byte);
+		tmp = (ubyte << 8);
 
-		u_origin_1 = static_cast<unsigned char>(origin_1);
-		u_origin_2 = static_cast<unsigned char>(origin_2);
-
-		//std::cout << std::hex << static_cast<uint16_t>(u_origin_1) << " " << static_cast<uint16_t>(u_origin_2) << " ";
-
-		tmp = (u_origin_1 << 8);
-		tmp = tmp | u_origin_2;
-
-		//tmp = swap16(tmp);
-
-		//tmp = (origin_2 << 8);
-		//tmp = tmp | origin_1;
-
-		//std::cout << std::hex << tmp << std::endl;
+		file.read(&byte, 1);
+		ubyte = static_cast<unsigned char>(byte);
+		tmp = tmp | ubyte;
 
 		*p = tmp;
 		p++;
 		read += 2;
-		tmp = 0;
-
-		origin_1 = '\0';
-		origin_2 = '\0';
-
 	}
-}
-
-char LC_3::swap8(char x)
-{
-	return (x << 4) | (x >> 4);
 }
 
 
@@ -509,31 +458,6 @@ uint16_t LC_3::swap16(uint16_t x)
 {
 	return (x << 8) | (x >> 8);
 }
-
-
-//int LC_3::read_image(const char* image_path)
-//{
-//	//std::ifstream fin{ image_path, std::ios::in | std::ios::binary };
-//
-//	//if (!fin.is_open())
-//	//	return 0;
-//
-//	//read_image_file(fin);
-//	//fin.close();
-//
-//	//return 1;
-//
-//	FILE* file = fopen(image_path, "rb");
-//	if (!file)
-//		return 0;
-//
-//	read_image_file(file);
-//	fclose(file);
-//
-//	return 1;
-//}
-
-
 
 
 int LC_3::read_image(const char* image_path)
