@@ -29,7 +29,7 @@ private:
 
 	uint16_t instruction;
 	int running = 1; // TODO: вынести в конструктор
-
+	const uint16_t MAX_MEMORY = (1 << 16);
 
 	/// <summary>
 	/// Оперативная память 128Кб
@@ -139,8 +139,11 @@ private:
 	void Halt();
 
 	void read_image_file(FILE* file);
+	void read_image_file(std::ifstream& file);
 	uint16_t swap16(uint16_t x);
 	int read_image(const char* image_path);
+
+	char swap8(char x);
 
 	enum class MR
 	{

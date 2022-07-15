@@ -5,7 +5,7 @@ void LC_3::run(const char* image_path)
 {
 	if (!read_image(image_path))
 	{
-		printf("failed to load image: %s\n", image_path);
+		std::cerr << "failed to load image: " << image_path << std::endl;
 		exit(1);
 	}
 
@@ -118,7 +118,6 @@ void LC_3::run(const char* image_path)
 }
 
 
-// TODO: возможно стоит сделать изменение значения через ссылку
 uint16_t LC_3::singExtend(uint16_t x, int bit_count) const 
 {
 	if (x >> (bit_count - 1) & 1)		//если первый бит 1 => число отрицательное, тогда число расширяется единицами, а не нулями
@@ -442,32 +441,111 @@ void LC_3::read_image_file(FILE* file)
 }
 
 
+void LC_3::read_image_file(std::ifstream& file)
+{
+	uint16_t origin;
+
+	char origin_1;
+	char origin_2;
+	file.read(&origin_1, 1);
+	file.read(&origin_2, 1);
+
+	origin = (origin_1 << 8);
+	//origin = origin << 8;
+	origin = origin | origin_2;
+
+	std::cout << origin << std::endl;
+
+	int max_read = UINT16_MAX - origin;
+	//char* p = (char*)(memory + (uint16_t)origin);
+	//std::size_t read = file.readsome(p, max_read);
+
+	uint16_t* p = memory + origin;
+	uint16_t tmp = 0;
+	std::size_t read = 0;
+
+	unsigned char u_origin_1;
+	unsigned char u_origin_2;
+
+
+	while (read < max_read)
+	{
+		file.read(&origin_1, 1);
+		file.read(&origin_2, 1);
+
+		u_origin_1 = static_cast<unsigned char>(origin_1);
+		u_origin_2 = static_cast<unsigned char>(origin_2);
+
+		//std::cout << std::hex << static_cast<uint16_t>(u_origin_1) << " " << static_cast<uint16_t>(u_origin_2) << " ";
+
+		tmp = (u_origin_1 << 8);
+		tmp = tmp | u_origin_2;
+
+		//tmp = swap16(tmp);
+
+		//tmp = (origin_2 << 8);
+		//tmp = tmp | origin_1;
+
+		//std::cout << std::hex << tmp << std::endl;
+
+		*p = tmp;
+		p++;
+		read += 2;
+		tmp = 0;
+
+		origin_1 = '\0';
+		origin_2 = '\0';
+
+	}
+}
+
+char LC_3::swap8(char x)
+{
+	return (x << 4) | (x >> 4);
+}
+
+
 uint16_t LC_3::swap16(uint16_t x)
 {
 	return (x << 8) | (x >> 8);
 }
 
 
+//int LC_3::read_image(const char* image_path)
+//{
+//	//std::ifstream fin{ image_path, std::ios::in | std::ios::binary };
+//
+//	//if (!fin.is_open())
+//	//	return 0;
+//
+//	//read_image_file(fin);
+//	//fin.close();
+//
+//	//return 1;
+//
+//	FILE* file = fopen(image_path, "rb");
+//	if (!file)
+//		return 0;
+//
+//	read_image_file(file);
+//	fclose(file);
+//
+//	return 1;
+//}
+
+
+
+
 int LC_3::read_image(const char* image_path)
 {
-	//std::ifstream fin{ image_path, std::ios::in | std::ios::binary };
-
-	//if (!fin.is_open())
-	//	return 0;
-
-	//read_image_file(fin);
-	//fin.close();
-
-	//return 1;
-
-	FILE* file = fopen(image_path, "rb");
-	if (!file)
+	std::ifstream file{ image_path, std::ios::in | std::ios::binary };
+	if (!file.is_open())
 		return 0;
 
 	read_image_file(file);
-	fclose(file);
+	file.close();
 
-	return 1;
+	return 1;	
 }
 
 
