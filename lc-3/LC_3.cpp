@@ -9,7 +9,7 @@ void LC_3::run(const char* image_path)
 		exit(1);
 	}
 
-	//signal(SIGINT, handle_interrupt);
+	signal(SIGINT, LC_3::handle_interrupt);
 	disable_input_buffering();
 
 	registers[static_cast<int>(REGISTERS::COND)] = static_cast<uint16_t>(FLAG::ZRO);
@@ -25,7 +25,7 @@ void LC_3::run(const char* image_path)
 	//int running = 1;
 	while (running)
 	{
-		instruction = mem_read(registers[static_cast<int>(REGISTERS::PC)]++);
+		instruction = readMemory(registers[static_cast<int>(REGISTERS::PC)]++);
 		operation = instruction >> 12;
 
 		op = static_cast<OPERATORS>(operation);
@@ -242,7 +242,7 @@ void LC_3::Ld()
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
-	registers[r_0] = mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
+	registers[r_0] = readMemory(registers[static_cast<int>(REGISTERS::PC)] + pc_offset);
 
 	updateFlags(r_0);
 }
@@ -253,7 +253,7 @@ void LC_3::Ldi()
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 
-	registers[r_0] = mem_read(mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset));
+	registers[r_0] = readMemory(readMemory(registers[static_cast<int>(REGISTERS::PC)] + pc_offset));
 
 	updateFlags(r_0);
 }
@@ -265,7 +265,7 @@ void LC_3::Ldr()
 	uint16_t r_1 = (instruction >> 6) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x3F, 6);
 
-	registers[r_0] = mem_read(registers[r_1] + pc_offset);
+	registers[r_0] = readMemory(registers[r_1] + pc_offset);
 
 	updateFlags(r_0);
 }
@@ -287,7 +287,7 @@ void LC_3::St()
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 
-	mem_write(registers[static_cast<int>(REGISTERS::PC)] + pc_offset, registers[r_0]);
+	writeMemory(registers[static_cast<int>(REGISTERS::PC)] + pc_offset, registers[r_0]);
 }
 
 
@@ -296,7 +296,7 @@ void LC_3::Sti()
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 
-	mem_write(mem_read(registers[static_cast<int>(REGISTERS::PC)] + pc_offset), registers[r_0]);
+	writeMemory(readMemory(registers[static_cast<int>(REGISTERS::PC)] + pc_offset), registers[r_0]);
 }
 
 
@@ -306,7 +306,7 @@ void LC_3::Str()
 	uint16_t r_1 = (instruction >> 6) & 0x7;
 	uint16_t offset = singExtend(instruction & 0x3F, 6);
 
-	mem_write(registers[r_1] + offset, registers[r_0]);
+	writeMemory(registers[r_1] + offset, registers[r_0]);
 }
 
 
@@ -369,7 +369,7 @@ void LC_3::Out()
 
 void LC_3::In()
 {
-	printf("Enter a character: ");
+	std::cout << "Enter a character: ";
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(std::cin.get());
 	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
@@ -433,10 +433,6 @@ void LC_3::read_image_file(std::ifstream& file)
 	uint16_t tmp = 0;
 	std::size_t read = 0;
 
-	unsigned char u_origin_1;
-	unsigned char u_origin_2;
-
-
 	while (read < max_read)
 	{
 		file.read(&byte, 1);
@@ -454,12 +450,6 @@ void LC_3::read_image_file(std::ifstream& file)
 }
 
 
-uint16_t LC_3::swap16(uint16_t x)
-{
-	return (x << 8) | (x >> 8);
-}
-
-
 int LC_3::read_image(const char* image_path)
 {
 	std::ifstream file{ image_path, std::ios::in | std::ios::binary };
@@ -473,12 +463,12 @@ int LC_3::read_image(const char* image_path)
 }
 
 
-void LC_3::mem_write(uint16_t address, uint16_t value)
+void LC_3::writeMemory(uint16_t address, uint16_t value)
 {
 	memory[address] = value;
 }
 
-uint16_t LC_3::mem_read(uint16_t address)
+uint16_t LC_3::readMemory(uint16_t address)
 {
 	if (address == static_cast<uint16_t>(MR::KBSR))
 	{
@@ -486,6 +476,11 @@ uint16_t LC_3::mem_read(uint16_t address)
 		{
 			memory[static_cast<int>(MR::KBSR)] = (1 << 15);
 			memory[static_cast<int>(MR::KBDR)] = std::cin.get();
+
+			//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			//std::cin.ignore(INT_MAX);
+			//std::cin.seekg(0, std::ios::end);
+			//std::cin.clear();
 		}
 		else
 		{
@@ -503,28 +498,27 @@ uint16_t LC_3::check_key()
 }
 
 
-
-
 void LC_3::disable_input_buffering()
 {
-	hStdin = GetStdHandle(STD_INPUT_HANDLE);
-	GetConsoleMode(hStdin, &fdwOldMode); /* save old mode */
-	fdwMode = fdwOldMode
-		^ ENABLE_ECHO_INPUT  /* no input echo */
-		^ ENABLE_LINE_INPUT; /* return when one or
-								more characters are available */
-	SetConsoleMode(hStdin, fdwMode); /* set new mode */
-	FlushConsoleInputBuffer(hStdin); /* clear buffer */
+	GetConsoleMode(hStdin, &fdwOldMode);
+
+	fdwMode = fdwOldMode ^ ENABLE_ECHO_INPUT ^ ENABLE_LINE_INPUT; 
+	
+	SetConsoleMode(hStdin, fdwMode);
+	
+	FlushConsoleInputBuffer(hStdin); 
 }
+
 
 void LC_3::restore_input_buffering()
 {
 	SetConsoleMode(hStdin, fdwOldMode);
 }
 
+
 void LC_3::handle_interrupt(int signal)
 {
-	restore_input_buffering();
-	printf("\n");
-	exit(-2);
+	//me->restore_input_buffering();
+	std::cout << "ctrl C handle" << std::endl;
+	exit(signal);
 }

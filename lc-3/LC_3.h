@@ -1,7 +1,5 @@
 #pragma once
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdint.h>
 #include <signal.h>
 
@@ -23,18 +21,40 @@ class LC_3
 {
 public:
 
+	LC_3() 
+	{
+		int running = 1;
+		instruction = 0;
+		
+		memory = new uint16_t[MAX_MEMORY];
+		registers = new uint16_t[static_cast<int>(REGISTERS::COUNT)];
+
+		hStdin = GetStdHandle(STD_INPUT_HANDLE);
+	}
+
 	void run(const char* image_path);
 
-private:
+	~LC_3()
+	{
 
+		delete[] registers;
+		delete[] memory;
+		
+
+		std::cout << "destructor" << std::endl;
+	}
+
+private:
+	
 	uint16_t instruction;
-	int running = 1; // TODO: вынести в конструктор
+	int running;
 	const uint16_t MAX_MEMORY = (1 << 16);
 
 	/// <summary>
 	/// Оперативная память 128Кб
 	/// </summary>
-	uint16_t memory[UINT16_MAX] = {}; // TODO: вынести в конструктор
+	//uint16_t memory[UINT16_MAX] = {}; // TODO: вынести в конструктор
+	uint16_t* memory;
 
 	/// <summary>
 	/// Доступные регистры
@@ -57,7 +77,8 @@ private:
 	/// <summary>
 	/// Хранение регистров
 	/// </summary>
-	uint16_t registers[static_cast<int>(REGISTERS::COUNT)];
+	//uint16_t registers[static_cast<int>(REGISTERS::COUNT)];
+	uint16_t* registers;
 
 	enum class OPERATORS
 	{
@@ -92,10 +113,6 @@ private:
 
 	/// <summary>
 	/// Расширение значений числа в дополнительном коде
-	/// 
-	/// Пример:
-	///		из 5-битного числа сделать 16-битное, с учетом знака
-	/// 
 	/// </summary>
 	uint16_t singExtend(uint16_t x, int bit_count) const;
 
@@ -121,12 +138,12 @@ private:
 
 	enum class TRAPS
 	{
-		GETC = 0x20,
-		OUT = 0x21,
-		PUTS = 0x22,
-		IN = 0x23,
-		PUTSP = 0x24,
-		HALT = 0x25
+		GETC	= 0x20,
+		OUT		= 0x21,
+		PUTS	= 0x22,
+		IN		= 0x23,
+		PUTSP	= 0x24,
+		HALT	= 0x25
 	};
 
 	void TRAP();
@@ -138,12 +155,8 @@ private:
 	void Putsp();
 	void Halt();
 
-	void read_image_file(FILE* file);
 	void read_image_file(std::ifstream& file);
-	uint16_t swap16(uint16_t x);
 	int read_image(const char* image_path);
-
-	char swap8(char x);
 
 	enum class MR
 	{
@@ -151,10 +164,10 @@ private:
 		KBDR = 0xFE02
 	};
 
-	void mem_write(uint16_t address, uint16_t value);
-	uint16_t mem_read(uint16_t address);
+	void writeMemory(uint16_t address, uint16_t value);
+	uint16_t readMemory(uint16_t address);
 
-	HANDLE hStdin = INVALID_HANDLE_VALUE;
+	HANDLE hStdin;
 	uint16_t check_key();
 
 	// windows console methods
@@ -163,6 +176,7 @@ private:
 
 	void disable_input_buffering();
 	void restore_input_buffering();
-	void handle_interrupt(int signal);
+
+	static void handle_interrupt(int signal);
 
 };
