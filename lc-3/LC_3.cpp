@@ -95,8 +95,6 @@ void LC_3::run()
 
 		default:
 		{
-			//abort();
-			//running = 0;
 			throw std::runtime_error("Unknown command.");
 			break;
 		}
