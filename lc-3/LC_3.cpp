@@ -363,30 +363,32 @@ void LC_3::trapIn()
 
 void LC_3::trapPuts()
 {
-	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
+	int i = registers[static_cast<int>(REGISTERS::R0)];
 
-	while (*c)
+	while (memory[i] != 0x0000)
 	{
-		std::cout << static_cast<char>(*c);
-		c++;
+		std::cout << static_cast<char>(memory[i]);
+		i++;
 	}
 }
 
 
 void LC_3::trapPutsp()
 {
-	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
+	int i = registers[static_cast<int>(REGISTERS::R0)];
 
-	while (*c)
+	while (memory[i] != 0x0000)
 	{
-		char c_1 = (*c) & 0xFF;
+		char c_1 = memory[i] & 0xFF;
 		std::cout << c_1;
-		
-		char c_2 = (*c) >> 8;
-		if (c_2)
-			std::cout << c_2;
 
-		c++;
+		char c_2 = memory[i] >> 8;
+		if (c_2)
+		{
+			std::cout << c_2;
+		}
+
+		i++;
 	}
 }
 
@@ -418,8 +420,8 @@ bool LC_3::loadProgram(std::string program_path)
 	ubyte = static_cast<unsigned char>(byte);
 	origin = origin | byte;
 
-	int max_read = UINT16_MAX - origin;
-	uint16_t* p = memory + origin;
+	int max_read = MAX_MEMORY - origin;
+	int i = origin;
 	uint16_t tmp = 0;
 	std::size_t read = 0;
 
@@ -433,8 +435,8 @@ bool LC_3::loadProgram(std::string program_path)
 		ubyte = static_cast<unsigned char>(byte);
 		tmp = tmp | ubyte;
 
-		*p = tmp;
-		p++;
+		memory[i] = tmp;
+		i++;
 		read += 2;
 	}
 

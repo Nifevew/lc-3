@@ -38,7 +38,7 @@ public:
 		fdwMode = NULL;
 		fdwOldMode = NULL;
 
-		memory = {};
+		//memory = {};
 		registers = {};
 
 		hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -75,7 +75,7 @@ private:
 	/// <summary>
 	/// Максимальный размер памяти
 	/// </summary>
-	static const uint16_t MAX_MEMORY = (1 << 16);
+	static const uint16_t MAX_MEMORY = UINT16_MAX;
 
 	/// <summary>
 	/// Оперативная память 128Кб
@@ -111,22 +111,22 @@ private:
 	/// </summary>
 	enum class OPERATORS
 	{
-		BR = 0, /* branch */
-		ADD,    /* add  */
-		LD,     /* load */
-		ST,     /* store */
-		JSR,    /* jump register */
-		AND,    /* bitwise and */
-		LDR,    /* load register */
-		STR,    /* store register */
-		RTI,    /* unused */
-		NOT,    /* bitwise not */
-		LDI,    /* load indirect */
-		STI,    /* store indirect */
-		JMP,    /* jump */
-		RES,    /* reserved (unused) */
-		LEA,    /* load effective address */
-		TRAP    /* execute trap */
+		BR = 0,		// branch 
+		ADD,		// add  
+		LD,			// load 
+		ST,			// store 
+		JSR,		// jump register 
+		AND,		// bitwise and 
+		LDR,		// load register 
+		STR,		// store register 
+		RTI,		// unused 
+		NOT,		// bitwise not 
+		LDI,		// load indirect 
+		STI,		// store indirect 
+		JMP,		// jump 
+		RES,		// reserved (unused) 
+		LEA,		// load effective address 
+		TRAP		// execute trap 
 	};
 
 	/// <summary>
