@@ -1,29 +1,17 @@
 #include "LC_3.h"
 
 
-void LC_3::run(const char* image_path)
+void LC_3::run()
 {
-	if (!read_image(image_path))
-	{
-		std::cerr << "failed to load image: " << image_path << std::endl;
-		exit(1);
-	}
-
-	signal(SIGINT, LC_3::handle_interrupt);
-	disable_input_buffering();
-
 	registers[static_cast<int>(REGISTERS::COND)] = static_cast<uint16_t>(FLAG::ZRO);
 
-	enum {PC_START = 0x3000};  // По умолчанию старт системы на 3000 адресе
-	registers[static_cast<int>(REGISTERS::PC)] = static_cast<uint16_t>(PC_START);
+	const uint16_t PC_START = 0x3000;
+	registers[static_cast<int>(REGISTERS::PC)] = PC_START;
 
-	//uint16_t instruction;
 	uint16_t operation;
-
 	OPERATORS op;
 
-	//int running = 1;
-	while (running)
+	while (running == 1)
 	{
 		instruction = readMemory(registers[static_cast<int>(REGISTERS::PC)]++);
 		operation = instruction >> 12;
@@ -34,67 +22,67 @@ void LC_3::run(const char* image_path)
 		{
 		case OPERATORS::ADD:
 		{
-			Add();
+			operatorAdd();
 			break;
 		}
 		case OPERATORS::AND:
 		{
-			And();
+			operatorAnd();
 			break;
 		}
 		case OPERATORS::NOT:
 		{
-			Not();
+			operatorNot();
 			break;
 		}
 		case OPERATORS::BR:
 		{
-			Br();
+			operatorBr();
 			break;
 		}
 		case OPERATORS::JMP:
 		{
-			Jmp();
+			operatorJmp();
 			break;
 		}
 		case OPERATORS::JSR:
 		{
-			Jsr();
+			operatorJsr();
 			break;
 		}
 		case OPERATORS::LD:
 		{
-			Ld();
+			operatorLd();
 			break;
 		}
 		case OPERATORS::LDI:
 		{
-			Ldi();
+			operatorLdi();
 			break;
 		}
 		case OPERATORS::LDR:
 		{
-			Ldr();
+			operatorLdr();
 			break;
 		}
 		case OPERATORS::LEA:
 		{
-			Lea();
+			operatorLea();
 			break;
 		}
 		case OPERATORS::ST:
 		{
-			St();
+			operatorSt();
 			break;
 		}
 		case OPERATORS::STI:
 		{
-			Sti();
+			operatorSti();
 			break;
 		}
 		case OPERATORS::STR:
 		{
-			Str();
+			operatorStr();
 			break;
 		}
 		case OPERATORS::TRAP:
@@ -113,8 +101,6 @@ void LC_3::run(const char* image_path)
 
 		}
 	}
-
-	restore_input_buffering();
 }
 
 
@@ -146,7 +132,7 @@ void LC_3::updateFlags(uint16_t r)
 }
 
 
-void LC_3::Add()
+void LC_3::operatorAdd()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;						// адрес регистра результата
 	uint16_t r_1 = (instruction >> 6) & 0x7;						// адрес регистра первого слагаемого
@@ -168,7 +154,7 @@ void LC_3::Add()
 }
 
 
-void LC_3::And()
+void LC_3::operatorAnd()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -190,7 +176,7 @@ void LC_3::And()
 }
 
 
-void LC_3::Not()
+void LC_3::operatorNot()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -200,7 +186,7 @@ void LC_3::Not()
 }
 
 
-void LC_3::Br()
+void LC_3::operatorBr()
 {
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
 	uint16_t cond_flag = (instruction >> 9) & 0x7;
@@ -212,14 +198,14 @@ void LC_3::Br()
 }
 
 
-void LC_3::Jmp()
+void LC_3::operatorJmp()
 {
 	uint16_t r_1 = (instruction >> 6) & 0x7;
 	registers[static_cast<int>(REGISTERS::PC)] = registers[r_1];
 }
 
 
-void LC_3::Jsr()
+void LC_3::operatorJsr()
 {
 	uint16_t long_flag = (instruction >> 11) & 0x1;
 	registers[static_cast<uint16_t>(REGISTERS::R7)] = registers[static_cast<uint16_t>(REGISTERS::PC)];
@@ -237,7 +223,7 @@ void LC_3::Jsr()
 }
 
 
-void LC_3::Ld()
+void LC_3::operatorLd()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 
@@ -248,7 +234,7 @@ void LC_3::Ld()
 }
 
 
-void LC_3::Ldi()
+void LC_3::operatorLdi()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -259,7 +245,7 @@ void LC_3::Ldi()
 }
 
 
-void LC_3::Ldr()
+void LC_3::operatorLdr()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -271,7 +257,7 @@ void LC_3::Ldr()
 }
 
 
-void LC_3::Lea()
+void LC_3::operatorLea()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -282,7 +268,7 @@ void LC_3::Lea()
 }
 
 
-void LC_3::St()
+void LC_3::operatorSt()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -291,7 +277,7 @@ void LC_3::St()
 }
 
 
-void LC_3::Sti()
+void LC_3::operatorSti()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t pc_offset = singExtend(instruction & 0x1FF, 9);
@@ -300,7 +286,7 @@ void LC_3::Sti()
 }
 
 
-void LC_3::Str()
+void LC_3::operatorStr()
 {
 	uint16_t r_0 = (instruction >> 9) & 0x7;
 	uint16_t r_1 = (instruction >> 6) & 0x7;
@@ -320,32 +306,32 @@ void LC_3::TRAP()
 	{
 	case TRAPS::GETC:
 	{
-		Getc();
+		trapGetc();
 		break;
 	}
 	case TRAPS::OUT:
 	{
-		Out();
+		trapOut();
 		break;
 	}
 	case TRAPS::PUTS:
 	{
-		Puts();
+		trapPuts();
 		break;
 	}
 	case TRAPS::IN:
 	{
-		In();
+		trapIn();
 		break;
 	}
 	case TRAPS::PUTSP:
 	{
-		Putsp();
+		trapPutsp();
 		break;
 	}
 	case TRAPS::HALT:
 	{
-		Halt();
+		trapHalt();
 		break;
 	}
 	default:
@@ -354,20 +340,20 @@ void LC_3::TRAP()
 }
 
 
-void LC_3::Getc()
+void LC_3::trapGetc()
 {
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(std::cin.get());
 	updateFlags(static_cast<uint16_t>(REGISTERS::R0));
 }
 
 
-void LC_3::Out()
+void LC_3::trapOut()
 {
 	std::cout << static_cast<char>(registers[static_cast<int>(REGISTERS::R0)]);
 }
 
 
-void LC_3::In()
+void LC_3::trapIn()
 {
 	std::cout << "Enter a character: ";
 	registers[static_cast<int>(REGISTERS::R0)] = static_cast<uint16_t>(std::cin.get());
@@ -375,7 +361,7 @@ void LC_3::In()
 }
 
 
-void LC_3::Puts()
+void LC_3::trapPuts()
 {
 	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
 
@@ -387,7 +373,7 @@ void LC_3::Puts()
 }
 
 
-void LC_3::Putsp()
+void LC_3::trapPutsp()
 {
 	uint16_t* c = memory + registers[static_cast<int>(REGISTERS::R0)];
 
@@ -405,7 +391,7 @@ void LC_3::Putsp()
 }
 
 
-void LC_3::Halt()
+void LC_3::trapHalt()
 {
 	std::cout << "HALT";
 
@@ -413,8 +399,12 @@ void LC_3::Halt()
 }
 
 
-void LC_3::read_image_file(std::ifstream& file)
+bool LC_3::loadProgram(std::string program_path)
 {
+	std::ifstream file{ program_path, std::ios::in | std::ios::binary };
+	if (!file.is_open())
+		return false;
+
 	uint16_t origin;
 
 	char byte;
@@ -447,19 +437,10 @@ void LC_3::read_image_file(std::ifstream& file)
 		p++;
 		read += 2;
 	}
-}
 
-
-int LC_3::read_image(const char* image_path)
-{
-	std::ifstream file{ image_path, std::ios::in | std::ios::binary };
-	if (!file.is_open())
-		return 0;
-
-	read_image_file(file);
 	file.close();
 
-	return 1;	
+	return true;
 }
 
 
@@ -468,19 +449,15 @@ void LC_3::writeMemory(uint16_t address, uint16_t value)
 	memory[address] = value;
 }
 
+
 uint16_t LC_3::readMemory(uint16_t address)
 {
 	if (address == static_cast<uint16_t>(MR::KBSR))
 	{
-		if (check_key())
+		if (checkKey())
 		{
 			memory[static_cast<int>(MR::KBSR)] = (1 << 15);
 			memory[static_cast<int>(MR::KBDR)] = std::cin.get();
-
-			//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			//std::cin.ignore(INT_MAX);
-			//std::cin.seekg(0, std::ios::end);
-			//std::cin.clear();
 		}
 		else
 		{
@@ -492,13 +469,13 @@ uint16_t LC_3::readMemory(uint16_t address)
 }
 
 
-uint16_t LC_3::check_key()
+uint16_t LC_3::checkKey()
 {
 	return WaitForSingleObject(hStdin, 1000) == WAIT_OBJECT_0 && _kbhit();
 }
 
 
-void LC_3::disable_input_buffering()
+void LC_3::disableInputBuffering()
 {
 	GetConsoleMode(hStdin, &fdwOldMode);
 
@@ -510,15 +487,7 @@ void LC_3::disable_input_buffering()
 }
 
 
-void LC_3::restore_input_buffering()
+void LC_3::restoreInputBuffering()
 {
 	SetConsoleMode(hStdin, fdwOldMode);
-}
-
-
-void LC_3::handle_interrupt(int signal)
-{
-	//me->restore_input_buffering();
-	std::cout << "ctrl C handle" << std::endl;
-	exit(signal);
 }

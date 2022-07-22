@@ -5,6 +5,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <array>
+
+#include <exception>
 
 #include <Windows.h>
 #include <conio.h>  // _kbhit
@@ -15,46 +19,69 @@
 
 
 /// <summary>
-/// Класс, реализующий LC-3 виртуальную машину
+/// Класс, реализующий эмулятор LC-3
 /// </summary>
 class LC_3
 {
 public:
 
-	LC_3() 
+	LC_3(std::string path_to_program) 
 	{
-		int running = 1;
+		if (!loadProgram(path_to_program))
+		{
+			throw std::runtime_error("Failed to load program: " + path_to_program);
+		}
+
+		running = 1;
 		instruction = 0;
-		
-		memory = new uint16_t[MAX_MEMORY];
-		registers = new uint16_t[static_cast<int>(REGISTERS::COUNT)];
+
+		fdwMode = NULL;
+		fdwOldMode = NULL;
+
+		memory = {};
+		registers = {};
 
 		hStdin = GetStdHandle(STD_INPUT_HANDLE);
+		disableInputBuffering();
 	}
 
-	void run(const char* image_path);
+	/// <summary>
+	/// Метод запуска эмулятора
+	/// </summary>
+	void run();
 
 	~LC_3()
 	{
-
-		delete[] registers;
-		delete[] memory;
-		
-
+		restoreInputBuffering();
 		std::cout << "destructor" << std::endl;
 	}
 
 private:
-	
+	/// <summary>
+	/// Путь, до *.obj файла с программой для LC-3
+	/// </summary>
+	std::string path_to_program;
+
+	/// <summary>
+	/// Текущая инструкция
+	/// </summary>
 	uint16_t instruction;
+
+	/// <summary>
+	/// Статус программы
+	/// </summary>
 	int running;
-	const uint16_t MAX_MEMORY = (1 << 16);
+
+	/// <summary>
+	/// Максимальный размер памяти
+	/// </summary>
+	static const uint16_t MAX_MEMORY = (1 << 16);
 
 	/// <summary>
 	/// Оперативная память 128Кб
 	/// </summary>
-	//uint16_t memory[UINT16_MAX] = {}; // TODO: вынести в конструктор
-	uint16_t* memory;
+	std::array<uint16_t, MAX_MEMORY> memory;
+
 
 	/// <summary>
 	/// Доступные регистры
@@ -75,11 +102,13 @@ private:
 	};
 
 	/// <summary>
-	/// Хранение регистров
+	/// Массив для хранения значений регистров
 	/// </summary>
-	//uint16_t registers[static_cast<int>(REGISTERS::COUNT)];
-	uint16_t* registers;
+	std::array<uint16_t, 10> registers;
 
+	/// <summary>
+	/// Доступные команды LC-3
+	/// </summary>
 	enum class OPERATORS
 	{
 		BR = 0, /* branch */
@@ -110,32 +139,33 @@ private:
 		NEG = 1 << 2  // N
 	};
 
-
 	/// <summary>
 	/// Расширение значений числа в дополнительном коде
 	/// </summary>
 	uint16_t singExtend(uint16_t x, int bit_count) const;
 
 	/// <summary>
-	/// 
+	/// Обновление значений флагов
 	/// </summary>
 	void updateFlags(uint16_t r);
 
+	void operatorAdd();
+	void operatorLdi();
+	void operatorAnd();
+	void operatorNot();
+	void operatorBr();
+	void operatorJmp();
+	void operatorJsr();
+	void operatorLd();
+	void operatorLdr();
+	void operatorSt();
+	void operatorSti();
+	void operatorStr();
+	void operatorLea();
 
-	void Add();
-	void Ldi();
-	void And();
-	void Not();
-	void Br();
-	void Jmp();
-	void Jsr();
-	void Ld();
-	void Ldr();
-	void St();
-	void Sti();
-	void Str();
-	void Lea();
-
+	/// <summary>
+	/// Доступные прерывания
+	/// </summary>
 	enum class TRAPS
 	{
 		GETC	= 0x20,
@@ -146,37 +176,78 @@ private:
 		HALT	= 0x25
 	};
 
+	/// <summary>
+	/// Обработка прерываний 
+	/// </summary>
 	void TRAP();
 
-	void Getc();
-	void Out();
-	void Puts();
-	void In();
-	void Putsp();
-	void Halt();
+	void trapGetc();
+	void trapOut();
+	void trapPuts();
+	void trapIn();
+	void trapPutsp();
+	void trapHalt();
 
-	void read_image_file(std::ifstream& file);
-	int read_image(const char* image_path);
+	/// <summary>
+	/// Загрузка программы из *.obj файла в ОЗУ
+	/// </summary>
+	/// <param name="program_path">: путь до программы</param>
+	/// <returns>True, если успешно; False, если ошибка</returns>
+	bool loadProgram(std::string program_path);
 
+	/// <summary>
+	/// Регистры обработки нажатий клавиатуры
+	/// </summary>
 	enum class MR
 	{
 		KBSR = 0xFE00,
 		KBDR = 0xFE02
 	};
 
+	/// <summary>
+	/// Запись значений в ОЗУ
+	/// </summary>
+	/// <param name="address">: адрес в ОЗУ</param>
+	/// <param name="value">: значение</param>
 	void writeMemory(uint16_t address, uint16_t value);
+
+	/// <summary>
+	/// Чтение из ОЗУ
+	/// </summary>
+	/// <param name="address">: адрес для чтений</param>
+	/// <returns>Значение в ячейке, 2байта</returns>
 	uint16_t readMemory(uint16_t address);
 
-	HANDLE hStdin;
-	uint16_t check_key();
+	/// <summary>
+	/// Проверка на нажатие клавиши клавиатуры
+	/// </summary>
+	/// <returns>Нажатая клавиша, либо 0</returns>
+	uint16_t checkKey();
 
-	// windows console methods
+	// Управление консоли Windows
+
+	/// <summary>
+	/// Дескриптор стандартного вывода консоли
+	/// </summary>
+	HANDLE hStdin;
+
+	/// <summary>
+	/// Состояние консоли
+	/// </summary>
 	DWORD fdwMode;
+
+	/// <summary>
+	/// Старое состояние консоли
+	/// </summary>
 	DWORD fdwOldMode;
 
-	void disable_input_buffering();
-	void restore_input_buffering();
+	/// <summary>
+	/// Отключить буферизацию консоли
+	/// </summary>
+	void disableInputBuffering();
 
-	static void handle_interrupt(int signal);
-
+	/// <summary>
+	/// Вернуть старое состояние консоли
+	/// </summary>
+	void restoreInputBuffering();
 };
