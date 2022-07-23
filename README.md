@@ -12,6 +12,14 @@ LC-3 является языком программирования низког
 
 Подробннее о спецификации команд и их структуре [тут](https://github.com/Nifevew/lc-3/blob/master/doc/%D0%A1%D0%BF%D0%B5%D1%86%D0%B8%D1%84%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D1%8F_LC-3.pdf).
 
+# Сборка 
+
+Только Windows + VS 2022+
+
+1. В меню Пуск окрыть "Developer Command Prompt for VS 2022"
+2. ```nmake```
+3. Запустить
+
 ----
 
 Данный проект написан по [статье](https://www.jmeiners.com/lc3-vm/index.html#bMemory_Storage:51) [github](https://github.com/justinmeiners/lc3-vm) с моим виденьем решения задачи.
