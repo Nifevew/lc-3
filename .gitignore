@@ -7,6 +7,7 @@
 *.vcxproj
 *.sln
 
+
 # User-specific files
 *.rsuser
 *.suo
@@ -34,6 +35,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# But obj samples
+!samples/*.obj
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
