@@ -1,6 +1,6 @@
 # LC-3 (Little Computer 3)
 
-Данный проект эмулирует работу LC-3(Little Computer 3).
+Эмуляция работы LC-3(Little Computer 3).
 
 LC-3 является языком программирования низкого уровня, используется в образовательных целях.
 
@@ -22,4 +22,4 @@ LC-3 является языком программирования низког
 
 ----
 
-Данный проект написан по [статье](https://www.jmeiners.com/lc3-vm/index.html#bMemory_Storage:51) [github](https://github.com/justinmeiners/lc3-vm) с моим виденьем решения задачи.
+За основу взята [статья](https://www.jmeiners.com/lc3-vm/index.html#bMemory_Storage:51) [github](https://github.com/justinmeiners/lc3-vm).
